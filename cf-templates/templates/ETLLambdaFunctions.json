@@ -1,0 +1,738 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "ETL Lambda Functions CloudFormation Template",
+    "Parameters": {
+        "artifactsS3": {
+            "Type": "String",
+            "Description": "S3 Bucket holding the lambda zips"
+        },
+        "deployTime": {
+            "Type": "String",
+            "Description": "Setting a time so Stack gets updated"
+        },
+        "lambdaRole": {
+            "Type": "String",
+            "Description": "Role to attach to the lambda functions"
+        },
+        "lambdaSecurityGroup": {
+            "Type": "String",
+            "Description": "Security Group to attach with Lambda"
+        },
+        "lambdaPrivateSubnetA": {
+            "Type": "String",
+            "Description": "Private Subnet A to attach with Lambda"
+        },
+        "lambdaPrivateSubnetB": {
+            "Type": "String",
+            "Description": "Private Subnet B to attach with Lambda"
+        },
+        "accessKey": {
+            "Type": "String",
+            "Description": "AWS IAM Access Key for accessing other AWS resources"
+        },
+        "appEnv": {
+            "Type": "String",
+            "Description": "Denote the environment"
+        },
+        "appUrl": {
+            "Type": "String",
+            "Description": "URL to Access the FLOW API"
+        },
+        "awsAccountId": {
+            "Type": "String",
+            "Description": "Account ID where the lambda functions are located"
+        },
+        "bucketName": {
+            "Type": "String",
+            "Description": "S3 Bucket holding the statements"
+        },
+        "internalApiToken": {
+            "Type": "String",
+            "Description": "Token to access FLOW API"
+        },
+        "internalApiUsername": {
+            "Type": "String",
+            "Description": "Username to access FLOW API"
+        },
+        "regionName": {
+            "Type": "String",
+            "Description": "AWS Region name"
+        },
+        "secretKey": {
+            "Type": "String",
+            "Description": "AWS IAM Secret Key for accessing other AWS resources"
+        },
+        "stmtDbDatabase": {
+            "Type": "String",
+            "Description": "Statement Database Name"
+        },
+        "stmtDbHost": {
+            "Type": "String",
+            "Description": "Statement Database Host"
+        },
+        "stmtDbPassword": {
+            "Type": "String",
+            "Description": "Statement Database Password"
+        },
+        "stmtDbUsername": {
+            "Type": "String",
+            "Description": "Statement Database Username"
+        }
+    },
+    "Resources": {
+        "PythonPackages": {
+            "Type": "AWS::Lambda::LayerVersion",
+            "Properties": {
+                "CompatibleRuntimes": [
+                    "python3.8"
+                ],
+                "Content": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/PythonPackages.zip"
+                    }
+                },
+                "LayerName": "PythonPackages"
+            }
+        },
+        "RmtnExport": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "rmtn_export",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "rmtn_export.lambda_handler",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/rmtn_export.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "RmtnTransform": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "rmtn_transform",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "rmtn_transform.lambda_handler2",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/rmtn_transform.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "RbokExport": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "rbok_export",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "rbok_export.lambda_handler",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/rbok_export.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 2000,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "RbokTransform": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "rbok_transform",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "rbok_transform.lambda_handler2",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/rbok_transform.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "ScoreCalc": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "score_calc",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "score.score_calc",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/score_calc.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "RatlExport": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ratl_export",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "ratl_export.lambda_handler",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/ratl_export.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "RatlTransform": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "ratl_transform",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "ratl_transform.lambda_handler2",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "${deployTime}/ratl_transform.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

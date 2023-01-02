@@ -1,0 +1,302 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Stack which generates the StepMachine for ETL Lambda Functions",
+    "Resources": {
+        "ETLStateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "StateMachineName": "ETLStateMachine",
+                "Definition": {
+                    "Comment": "Step Function to handle ETL workflow",
+                    "StartAt": "initial_choice",
+                    "States": {
+                        "score_choice": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "Pass"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RMTN_choice_1": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "rmtn_transform"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RMTN_choice_2": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "score_calc"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RBOK_choice_1": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "rbok_transform"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RBOK_choice_2": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "score_calc"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RATL_choice_1": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "ratl_transform"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "RATL_choice_2": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "score_calc"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "initial_choice": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.acc_prvdr_code",
+                                    "StringEquals": "RMTN",
+                                    "Next": "rmtn_export"
+                                },
+                                {
+                                    "Variable": "$.acc_prvdr_code",
+                                    "StringEquals": "RBOK",
+                                    "Next": "rbok_export"
+                                },
+                                {
+                                    "Variable": "$.acc_prvdr_code",
+                                    "StringEquals": "RATL",
+                                    "Next": "ratl_export"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "Fail": {
+                            "Type": "Fail"
+                        },
+                        "Pass": {
+                            "Type": "Pass",
+                            "End": true
+                        },
+                        "score_calc": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:score_calc:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "score_choice"
+                        },
+                        "rmtn_export": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:rmtn_export:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RMTN_choice_1"
+                        },
+                        "rmtn_transform": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:rmtn_transform:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RMTN_choice_2"
+                        },
+                        "rbok_export": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:rbok_export:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RBOK_choice_1"
+                        },
+                        "rbok_transform": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:rbok_transform:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RBOK_choice_2"
+                        },
+                        "ratl_export": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ratl_export:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RATL_choice_1"
+                        },
+                        "ratl_transform": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ratl_transform:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "RATL_choice_2"
+                        }
+                    },
+                    "TimeoutSeconds": 1200
+                },
+                "RoleArn": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/ETLSfnRole"
+                }
+            }
+        }
+    }
+}

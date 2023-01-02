@@ -1,0 +1,93 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Policy granting permissions for ETL Lambda",
+    "Parameters": {
+        "GroupName": {
+          "Description": "The Group to attach the policies to",
+          "Type": "String"
+        }
+    },
+    "Resources": {
+        "ETLUserGroup": {
+            "Type" : "AWS::IAM::Group",
+            "Properties" : {
+                "GroupName" : "ETLUserGroup"
+            }
+        },
+        "ETLPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "ETLPolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:PutObject",
+                                "s3:GetObject",
+                                "lambda:InvokeFunction",
+                                "s3:ListBucket",
+                                "states:StartExecution"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Groups": [ 
+                    {
+                        "Ref": "ETLUserGroup"
+                    }
+                ]
+            }
+        },
+        "GithubActionsLambdaDeploy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "GithubActions-LambdaDeploy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "VisualEditor0",
+                            "Effect": "Allow",
+                            "Action": [
+                                "lambda:CreateFunction",
+                                "lambda:GetLayerVersion",
+                                "lambda:GetFunction",
+                                "lambda:PublishLayerVersion",
+                                "lambda:UpdateFunctionConfiguration",
+                                "cloudformation:*",
+                                "s3:ListBucket",
+                                "s3:PutObject",
+                                "s3:GetObject",
+                                "lambda:UpdateFunctionCode",
+                                "iam:PassRole",
+                                "lambda:DeleteLayerVersion",
+                                "lambda:DeleteFunction",
+                                "ec2:DescribeSecurityGroups",
+                                "ec2:DescribeVpcs",
+                                "ec2:DescribeSubnets",
+                                "states:CreateStateMachine",
+                                "states:TagResource",
+                                "states:UpdateStateMachine"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "VisualEditor1",
+                            "Effect": "Deny",
+                            "Action": "cloudformation:DeleteStack",
+                            "Resource": { "Fn::Sub": "arn:aws:cloudformation:ap-south-1:${AWS::AccountId}:stack/lambda-functions/*" }
+                        }
+                    ]
+                },
+                "Groups": [ 
+                    {
+                        "Ref": "ETLUserGroup"
+                    }
+                ]
+            }
+        }
+    }
+}

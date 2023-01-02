@@ -1,0 +1,7 @@
+<br>
+{% for error in errors%}
+   {% for key, value in error.items()%}
+      <p>{{key}} - {{value}} </p>
+   {% endfor %}
+{% endfor %}
+<br>

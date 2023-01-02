@@ -1,0 +1,12 @@
+pandas
+sqlalchemy
+pymysql
+python-dotenv
+requests
+pdfplumber
+shortuuid
+openpyxl
+flask
+flask_mail
+fuzzywuzzy
+levenshtein

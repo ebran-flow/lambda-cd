@@ -1,0 +1,42 @@
+Parameters:
+  LambdaVPCStackName:
+    Type: "String"
+  DBUsername:
+    Type: "String"
+  DBPassword:
+    Type: "String"
+Resources: 
+  RDSSubnet:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: !Join ["-", [!Ref "AWS::StackName","subnet-group"]]
+      DBSubnetGroupName: !Join ["-", [!Ref "AWS::StackName","subnet-group"]]
+      SubnetIds: 
+        - Fn::ImportValue:
+            !Sub "${LambdaVPCStackName}-private-subnet-a"
+        - Fn::ImportValue:
+            !Sub "${LambdaVPCStackName}-private-subnet-b"
+      Tags: 
+        - Key: Name
+          Value: !Join ["-", [!Ref "AWS::StackName","subnet-group"]]
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DependsOn: RDSSubnet
+    Properties: 
+      AllocatedStorage: 20
+      MaxAllocatedStorage: 100
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: flow-cust-data
+      DBName: flow_cust_data
+      DBSubnetGroupName: !Ref RDSSubnet
+      Engine: mysql
+      EngineVersion: 8.0.28
+      MasterUsername: !Ref "DBUsername"
+      MasterUserPassword: !Ref "DBPassword"
+      StorageType: gp2
+      Tags: 
+        - Key: Name
+          Value: !Join ["-", [!Ref "AWS::StackName","RDS"]]
+      VPCSecurityGroups: 
+        - Fn::ImportValue:
+            !Sub "${LambdaVPCStackName}-vpc-sg"
