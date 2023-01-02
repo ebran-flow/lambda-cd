@@ -1,0 +1,98 @@
+name: Deploy ETL Lambda Functions
+
+# When this action should be invoked
+on:
+  # On clicking the dispatch button
+  workflow_dispatch:
+# Store some environment variables
+env:
+  python-version: '3.8'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  ETLLambdaDeployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set current time
+        run: echo "deployTime=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Get current time
+        run: echo ${{ env.deployTime }}
+
+      - name: Checkout the code from main branch
+        uses: actions/checkout@v3
+
+      - name: Make artifact folder to hold the zip files
+        run: mkdir -p ./artifacts
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: 'pip'
+
+      - name: Import montudor/action-zip to perform zip actions
+        uses: montudor/action-zip@v0.1.0
+      
+      - name: Install the necessary python packages
+        run: pip install --target ./python/lib/python${{ env.python-version }}/site-packages -r requirements.txt
+
+      - name: Zip the python packages
+        run: |
+          cp common.py python/common.py
+          cp -r templates python/
+          cp -r mailer.py python/mailer.py
+          zip -r ./artifacts/rmtn_export.zip rmtn_export.py
+          zip -r ./artifacts/rmtn_transform.zip rmtn_transform.py
+          zip -r ./artifacts/ratl_export.zip ratl_export.py
+          zip -r ./artifacts/ratl_transform.zip ratl_transform.py
+          zip -r ./artifacts/rbok_export.zip rbok_export.py
+          zip -r ./artifacts/rbok_transform.zip rbok_transform.py
+          zip -r ./artifacts/score_calc.zip score.py
+          zip -r ./artifacts/PythonPackages.zip python
+
+      - name: Push the Zip to S3
+        uses: jakejarvis/s3-sync-action@master
+        env:
+          SOURCE_DIR: './artifacts'
+          DEST_DIR: '${{ env.deployTime }}'
+          AWS_REGION: 'ap-south-1'
+          AWS_S3_BUCKET: ${{ secrets.ARTIFACTS_S3 }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      - name: Configure AWS credentials
+        id: aws-creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Deploy CloudFormation Stacks for Lambda Functions
+        id: lambda-functions
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
+        with:
+          name: ETLLambdaFunctions
+          template: cf-templates/templates/ETLLambdaFunctions.json
+          no-fail-on-empty-changeset: "1"
+          parameter-overrides: >-
+            deployTime=${{ env.deployTime }},
+            artifactsS3=${{ secrets.ARTIFACTS_S3 }},
+            lambdaRole=${{ secrets.LAMBDA_ROLE }},
+            accessKey=${{ secrets.AWS_ACCESS_KEY_ID }},
+            appEnv=production,
+            appUrl=${{ secrets.APP_URL }},
+            awsAccountId=${{ secrets.AWS_ACCOUNT_ID }},
+            bucketName=${{ secrets.BUCKET_NAME }},
+            internalApiToken=${{ secrets.INTERNAL_API_TOKEN }},
+            internalApiUsername=${{ secrets.INTERNAL_API_USERNAME }},
+            regionName=${{ secrets.REGION_NAME }},
+            secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }},
+            stmtDbDatabase=${{ secrets.STMT_DB_DATABASE }},
+            stmtDbHost=${{ secrets.STMT_DB_HOST }},
+            stmtDbPassword=${{ secrets.STMT_DB_PASSWORD }},
+            stmtDbUsername=${{ secrets.STMT_DB_USERNAME }},
+            lambdaSecurityGroup=${{ secrets.LAMBDA_SECURITY_GROUP }},
+            lambdaPrivateSubnetA=${{ secrets.LAMBDA_PRIVATE_SUBNET_A }},
+            lambdaPrivateSubnetB=${{ secrets.LAMBDA_PRIVATE_SUBNET_B }}
