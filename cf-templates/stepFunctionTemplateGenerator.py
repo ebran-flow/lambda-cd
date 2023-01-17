@@ -176,7 +176,7 @@ class SFTemplateGenerator:
         self.set_lambda_n_choice_state_configs(ap_codes)
     
 def main():
-    template = SFTemplateGenerator(['RMTN','RBOK','RATL'])
+    template = SFTemplateGenerator(['RMTN','RBOK','RATL', 'RRTN'])
     template()
 
 if __name__ == '__main__':

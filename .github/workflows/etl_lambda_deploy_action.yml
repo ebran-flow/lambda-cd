@@ -44,6 +44,8 @@ jobs:
           cp -r mailer.py python/mailer.py
           zip -r ./artifacts/rmtn_export.zip rmtn_export.py
           zip -r ./artifacts/rmtn_transform.zip rmtn_transform.py
+          zip -r ./artifacts/rrtn_export.zip rrtn_export.py
+          zip -r ./artifacts/rrtn_transform.zip rrtn_transform.py
           zip -r ./artifacts/ratl_export.zip ratl_export.py
           zip -r ./artifacts/ratl_transform.zip ratl_transform.py
           zip -r ./artifacts/rbok_export.zip rbok_export.py

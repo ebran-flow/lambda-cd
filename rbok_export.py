@@ -394,6 +394,7 @@ def perform_basic_cleaning(df):
 
 def addl_clean_internet_bnk_fmt_1(df):
     df['txn_type'] = df['descr'].apply(get_txn_type)
+    df = df[~df['txn_date'].str.contains('Date', na=False)]
     return df
 
 def addl_clean_bnk_fmt_1(df):

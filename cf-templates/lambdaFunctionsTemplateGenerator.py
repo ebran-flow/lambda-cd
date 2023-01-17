@@ -333,6 +333,18 @@ def main():
             'function': 'ratl_transform',
             'handler': 'ratl_transform.lambda_handler2',
         },
+        {
+            'time': 300,
+            'memory': 800,
+            'function': 'rrtn_export',
+            'handler': 'rrtn_export.lambda_handler',
+        },
+        {
+            'time': 300,
+            'memory': 800,
+            'function': 'rrtn_transform',
+            'handler': 'rrtn_transform.lambda_handler2',
+        },
     ]
     layers = ['PythonPackages']
 
