@@ -6,7 +6,7 @@
             "Type": "String",
             "Description": "S3 Bucket holding the lambda zips"
         },
-        "deployment_packages/${deploy_time}": {
+        "deploy_time": {
             "Type": "String",
             "Description": "Setting a time so Stack gets updated"
         },

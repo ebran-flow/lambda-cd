@@ -10,7 +10,8 @@ class LFTemplateGenerator:
     LAMBDA_ROLE_REF = 'lambdaRole'
 
     CODE_S3 = 'artifactsS3'
-    CODE_FOLDER = f'deployment_packages/${{deploy_time}}'
+    CODE_FOLDER_TIME = 'deploy_time'
+    CODE_FOLDER = f'deployment_packages/${{{CODE_FOLDER_TIME}}}'
 
     RUNTIME = 'python3.8'
 
@@ -26,7 +27,7 @@ class LFTemplateGenerator:
             "Description": "S3 Bucket holding the lambda zips",
             "Include": False, ## To include in Lambda Functions Environment
         },
-        CODE_FOLDER: {
+        CODE_FOLDER_TIME: {
             "Type": "String",
             "Description": "Setting a time so Stack gets updated",
             "Include": False,
