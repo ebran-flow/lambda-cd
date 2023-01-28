@@ -57,7 +57,7 @@ jobs:
         uses: jakejarvis/s3-sync-action@master
         env:
           SOURCE_DIR: './artifacts'
-          DEST_DIR: '${{ env.deployTime }}'
+          DEST_DIR: 'deployment_packages/${{ env.deployTime }}'
           AWS_REGION: 'ap-south-1'
           AWS_S3_BUCKET: ${{ secrets.ARTIFACTS_S3 }}
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}

@@ -10,7 +10,7 @@ class LFTemplateGenerator:
     LAMBDA_ROLE_REF = 'lambdaRole'
 
     CODE_S3 = 'artifactsS3'
-    CODE_FOLDER = 'deployTime'
+    CODE_FOLDER = f'deployment_packages/${{deploy_time}}'
 
     RUNTIME = 'python3.8'
 
@@ -185,7 +185,7 @@ class LFTemplateGenerator:
                 "Ref": self.CODE_S3
             },
             "S3Key": {
-                "Fn::Sub": f"${{{self.CODE_FOLDER}}}/{zip_name}.zip"
+                "Fn::Sub": f"{self.CODE_FOLDER}/{zip_name}.zip"
             }
         }
 
