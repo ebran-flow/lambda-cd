@@ -6,7 +6,7 @@
             "Type": "String",
             "Description": "S3 Bucket holding the lambda zips"
         },
-        "deploy_time": {
+        "deployTime": {
             "Type": "String",
             "Description": "Setting a time so Stack gets updated"
         },
@@ -91,7 +91,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/PythonPackages.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/PythonPackages.zip"
                     }
                 },
                 "LayerName": "PythonPackages"
@@ -118,7 +118,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rmtn_export.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rmtn_export.zip"
                     }
                 },
                 "Timeout": 300,
@@ -209,7 +209,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rmtn_transform.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rmtn_transform.zip"
                     }
                 },
                 "Timeout": 300,
@@ -300,7 +300,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rbok_export.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rbok_export.zip"
                     }
                 },
                 "Timeout": 300,
@@ -391,7 +391,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rbok_transform.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rbok_transform.zip"
                     }
                 },
                 "Timeout": 300,
@@ -482,7 +482,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/score_calc.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/score_calc.zip"
                     }
                 },
                 "Timeout": 300,
@@ -573,7 +573,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/ratl_export.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/ratl_export.zip"
                     }
                 },
                 "Timeout": 300,
@@ -664,7 +664,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/ratl_transform.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/ratl_transform.zip"
                     }
                 },
                 "Timeout": 300,
@@ -755,7 +755,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rrtn_export.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rrtn_export.zip"
                     }
                 },
                 "Timeout": 300,
@@ -846,7 +846,7 @@
                         "Ref": "artifactsS3"
                     },
                     "S3Key": {
-                        "Fn::Sub": "deployment_packages/${deploy_time}/rrtn_transform.zip"
+                        "Fn::Sub": "deployment_packages/${deployTime}/rrtn_transform.zip"
                     }
                 },
                 "Timeout": 300,

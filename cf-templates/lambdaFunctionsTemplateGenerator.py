@@ -10,7 +10,7 @@ class LFTemplateGenerator:
     LAMBDA_ROLE_REF = 'lambdaRole'
 
     CODE_S3 = 'artifactsS3'
-    CODE_FOLDER_TIME = 'deploy_time'
+    CODE_FOLDER_TIME = 'deployTime'
     CODE_FOLDER = f'deployment_packages/${{{CODE_FOLDER_TIME}}}'
 
     RUNTIME = 'python3.8'
