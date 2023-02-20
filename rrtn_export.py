@@ -6,6 +6,8 @@ TIME_ZONE= 'Africa/Kigali'
 def process_file_and_get_df(object_key):
     contents = handle_file_loading(object_key)
     df = pd.read_json(contents)
+    if df.empty:
+        raise Exception('Statement is empty')
     return df
 
 def rename(df):

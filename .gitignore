@@ -112,7 +112,6 @@ venv.bak/
 ds-env/
 aws_env/
 DATA/
-.vscode/
 
 # Spyder project settings
 .spyderproject

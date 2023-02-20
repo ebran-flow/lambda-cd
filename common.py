@@ -66,7 +66,9 @@ class Constants:
         },
     }
     
-    
+class FlowInvalidDateException(Exception):
+    pass
+
 # LOAD ENV FILE
 load_dotenv()
 
@@ -310,7 +312,7 @@ def parse_date_in_string(datestring, formats):
             return dt.strptime(datestring, format)
         except ValueError:
             continue
-    raise Exception(f"Unable to parse date: '{datestring}' using given formats: {formats}") 
+    raise FlowInvalidDateException(f"Unable to parse date: '{datestring}' using given formats: {formats}") 
 
 def timeout_handler(_signal, _frame):
     raise Exception('Time exceeded')
@@ -607,6 +609,29 @@ def set_session(country_code):
     os.environ["TIME_ZONE"] = Constants.COUNTRY_TO_TIME_ZONE[country_code]
     return df, engine, country_code
 
+def insert_commission_records(txn_df, comms_df, date_field, required_common_months, month_to_offset, format):
+
+    txn_df[date_field] =  pd.to_datetime(txn_df[date_field], format=format)
+    comms_df[date_field] =  pd.to_datetime(comms_df[date_field], format=format)
+
+    if month_to_offset != None:
+        comms_df[date_field] = comms_df[date_field] + pd.offsets.DateOffset(months=month_to_offset)
+
+    txn_months = txn_df[date_field].dt.strftime("%m %Y").unique().tolist()
+    comms_months = comms_df[date_field].dt.strftime("%m %Y").unique().tolist()
+    common_months = list(set(txn_months) & set(comms_months))
+    if len(common_months) < required_common_months:
+        raise Exception(f"The common months between commission and transaction statement is less than {required_common_months}. \nCommission months: {comms_months} \nTransaction months: {txn_months}")
+
+    print(f"Common Months btw float and comms stmt: {common_months}")
+    
+    txn_df = txn_df[txn_df[date_field].dt.strftime('%m %Y').isin(common_months)]
+    if month_to_offset != None:
+        comms_df[date_field] = comms_df[date_field] + pd.offsets.DateOffset(months=-month_to_offset)
+
+    txn_df = pd.concat([txn_df, comms_df])
+    return txn_df
+    
 def main():
     print("Inside Common!")
 
