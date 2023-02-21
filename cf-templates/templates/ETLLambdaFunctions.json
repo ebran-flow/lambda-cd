@@ -915,6 +915,188 @@
                     ]
                 }
             }
+        },
+        "CcaExport": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "cca_export",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "cca_export.lambda_handler",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "deployment_packages/${deployTime}/cca_export.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
+        },
+        "CcaTransform": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "cca_transform",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::Sub": [
+                        "arn:aws:iam::${AWS::AccountId}:role/${ETLRole}",
+                        {
+                            "ETLRole": {
+                                "Ref": "lambdaRole"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "cca_transform.lambda_handler2",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "artifactsS3"
+                    },
+                    "S3Key": {
+                        "Fn::Sub": "deployment_packages/${deployTime}/cca_transform.zip"
+                    }
+                },
+                "Timeout": 300,
+                "MemorySize": 800,
+                "Environment": {
+                    "Variables": {
+                        "ACCESS_KEY": {
+                            "Ref": "accessKey"
+                        },
+                        "APP_ENV": {
+                            "Ref": "appEnv"
+                        },
+                        "APP_URL": {
+                            "Ref": "appUrl"
+                        },
+                        "AWS_ACCOUNT_ID": {
+                            "Ref": "awsAccountId"
+                        },
+                        "BUCKET_NAME": {
+                            "Ref": "bucketName"
+                        },
+                        "INTERNAL_API_TOKEN": {
+                            "Ref": "internalApiToken"
+                        },
+                        "INTERNAL_API_USERNAME": {
+                            "Ref": "internalApiUsername"
+                        },
+                        "REGION_NAME": {
+                            "Ref": "regionName"
+                        },
+                        "SECRET_KEY": {
+                            "Ref": "secretKey"
+                        },
+                        "STMT_DB_DATABASE": {
+                            "Ref": "stmtDbDatabase"
+                        },
+                        "STMT_DB_HOST": {
+                            "Ref": "stmtDbHost"
+                        },
+                        "STMT_DB_PASSWORD": {
+                            "Ref": "stmtDbPassword"
+                        },
+                        "STMT_DB_USERNAME": {
+                            "Ref": "stmtDbUsername"
+                        }
+                    }
+                },
+                "Layers": [
+                    {
+                        "Ref": "PythonPackages"
+                    }
+                ],
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "lambdaSecurityGroup"
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "lambdaPrivateSubnetA"
+                        },
+                        {
+                            "Ref": "lambdaPrivateSubnetB"
+                        }
+                    ]
+                }
+            }
         }
     }
 }

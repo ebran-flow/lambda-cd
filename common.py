@@ -64,9 +64,18 @@ class Constants:
             'FILTER_BY': 'acc_number',
             'FILTER_CONTINUOUS': None,
         },
+
+        'cca_cust_acc_stmts': {
+            'REQUIRED_COLUMNS': ['merchant_number','acc_number','txn_date','txn_ref_id','txn_type','txn_amount','export_run_id','transform_status'],
+            'UNIQUE_COLUMNS': ['txn_ref_id', 'txn_date', 'acc_number'],
+            'FILTER_BY': 'acc_number',
+            'FILTER_CONTINUOUS': 'txn_date',    
+        }
     }
     
 class FlowInvalidDateException(Exception):
+    pass
+class FlowEmptyStatementException(Exception):
     pass
 
 # LOAD ENV FILE
@@ -559,7 +568,7 @@ def clean_n_insert(df, db_con, addl_data, clean_func):
     exp_list = insert_df_to_db(df, db_con, addl_data)
     return df, exp_list
 
-def invoke_score_calc(event, no_of_days):
+def invoke_score_calc(event, no_of_days=90):
     data = {
         "time_zone": os.environ.get('TIME_ZONE'),
         "no_of_days": no_of_days
@@ -599,6 +608,8 @@ def invoke_transform(event):
             from ratl_transform import lambda_handler2
         elif ap_code == 'UEZM':
             from uezm_transform import lambda_handler2
+        elif ap_code == 'CCA':
+            from cca_transform import lambda_handler2
         lambda_handler2(event, None)
 
 def set_session(country_code):

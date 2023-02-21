@@ -50,6 +50,8 @@ jobs:
           zip -r ./artifacts/ratl_transform.zip ratl_transform.py
           zip -r ./artifacts/rbok_export.zip rbok_export.py
           zip -r ./artifacts/rbok_transform.zip rbok_transform.py
+          zip -r ./artifacts/cca_export.zip cca_export.py
+          zip -r ./artifacts/cca_transform.zip cca_transform.py
           zip -r ./artifacts/score_calc.zip score.py
           zip -r ./artifacts/PythonPackages.zip python
 

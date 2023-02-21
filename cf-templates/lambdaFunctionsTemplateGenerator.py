@@ -346,6 +346,18 @@ def main():
             'function': 'rrtn_transform',
             'handler': 'rrtn_transform.lambda_handler2',
         },
+        {
+            'time': 300,
+            'memory': 800,
+            'function': 'cca_export',
+            'handler': 'cca_export.lambda_handler',
+        },
+        {
+            'time': 300,
+            'memory': 800,
+            'function': 'cca_transform',
+            'handler': 'cca_transform.lambda_handler2',
+        },
     ]
     layers = ['PythonPackages']
 

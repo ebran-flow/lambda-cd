@@ -109,6 +109,28 @@
                             ],
                             "Default": "Fail"
                         },
+                        "CCA_choice_1": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "cca_transform"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
+                        "CCA_choice_2": {
+                            "Type": "Choice",
+                            "Choices": [
+                                {
+                                    "Variable": "$.status",
+                                    "StringEquals": "success",
+                                    "Next": "score_calc"
+                                }
+                            ],
+                            "Default": "Fail"
+                        },
                         "initial_choice": {
                             "Type": "Choice",
                             "Choices": [
@@ -131,6 +153,11 @@
                                     "Variable": "$.acc_prvdr_code",
                                     "StringEquals": "RRTN",
                                     "Next": "rrtn_export"
+                                },
+                                {
+                                    "Variable": "$.acc_prvdr_code",
+                                    "StringEquals": "CCA",
+                                    "Next": "cca_export"
                                 }
                             ],
                             "Default": "Fail"
@@ -366,6 +393,56 @@
                                 }
                             ],
                             "Next": "RRTN_choice_2"
+                        },
+                        "cca_export": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cca_export:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "CCA_choice_1"
+                        },
+                        "cca_transform": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": {
+                                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cca_transform:$LATEST"
+                                }
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "CCA_choice_2"
                         }
                     },
                     "TimeoutSeconds": 1200
